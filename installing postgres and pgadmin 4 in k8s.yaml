@@ -29,11 +29,11 @@ Update Complete. ⎈Happy Helming!⎈
 
 when connecting one pod to another in a different namespace using the following or the service internal ip address 
 
-podname-servicename.namespace
+servicename.namespace or internal-IP
 
 for connecting pods in the same namespace using the following or the service internal ip address 
 
-podname-servicename 
+servicename or internal-IP
 
 Prior to installing pgadmin4 upadte the following entires in the values.yaml file.
 

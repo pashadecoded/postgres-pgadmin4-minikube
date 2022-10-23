@@ -1,0 +1,83 @@
+installing postgres and pgadmin 4 in k8s
+
+PS C:\mobius-k8s> helm repo add bitnami https://charts.bitnami.com/bitnami
+PS C:\mobius-k8s> helm pull bitnami/postgresql
+PS C:\mobius-k8s> tar -zxvf postgresql-11.6.12.tgz
+PS C:\mobius-k8s> rm -rf postgresql-11.6.12.tgz
+
+modify values.yaml to update the followinf entries
+
+auth:
+  ## @param auth.enablePostgresUser Assign a password to the "postgres" admin user. Otherwise, remote access will be blocked for this user
+  ##
+  enablePostgresUser: true
+  ## @param auth.postgresPassword Password for the "postgres" admin user. Ignored if `auth.existingSecret` with key `postgres-password` is provided
+  ##
+  postgresPassword: "postgres"
+
+PS C:\mobius-k8s> helm install postgres postgresql-11.6.12.tgz
+
+PS C:\mobius-k8s> helm repo add runix https://helm.runix.net
+"runix" has been added to your repositories
+
+PS C:\mobius-k8s> helm repo update
+Hang tight while we grab the latest from your chart repositories...
+...Successfully got an update from the "runix" chart repository
+...Successfully got an update from the "kubernetes-dashboard" chart repository
+...Successfully got an update from the "bitnami" chart repository
+Update Complete. ⎈Happy Helming!⎈
+
+when connecting one pod to another in a different namespace using the following or the service internal ip address 
+
+podname-servicename.namespace
+
+for connecting pods in the same namespace using the following or the service internal ip address 
+
+podname-servicename 
+
+Prior to installing pgadmin4 upadte the following entires in the values.yaml file.
+
+serverDefinitions:
+  ## If true, server definitions will be created
+  ##
+  enabled: true
+
+  servers:
+   firstServer:
+     Name: "postgres-minikube"
+     Group: "Servers"
+     Port: 5432
+     Username: "postgres"
+     password: "postgres"
+     Host: "postgres-postgresql.postgres"
+     SSLMode: "prefer"
+     MaintenanceDB: "postgres"
+env:
+  email: postgres@pgadmin4.com
+  password: postgres
+
+
+PS C:\mobius-k8s> helm install pgadmin4 runix/pgadmin4
+
+run the following to tunnerl to the host so that you can access it using the browser
+
+PS C:\mobius-k8s\pgadmin4> minikube service pgadmin-pgadmin4 -n pgadmin4
+|-----------|------------------|-------------|--------------|
+| NAMESPACE |       NAME       | TARGET PORT |     URL      |
+|-----------|------------------|-------------|--------------|
+| pgadmin4  | pgadmin-pgadmin4 |             | No node port |
+|-----------|------------------|-------------|--------------|
+* service pgadmin4/pgadmin-pgadmin4 has no node port
+* Starting tunnel for service pgadmin-pgadmin4.
+|-----------|------------------|-------------|------------------------|
+| NAMESPACE |       NAME       | TARGET PORT |          URL           |
+|-----------|------------------|-------------|------------------------|
+| pgadmin4  | pgadmin-pgadmin4 |             | http://127.0.0.1:64572 |
+|-----------|------------------|-------------|------------------------|
+* Opening service pgadmin4/pgadmin-pgadmin4 in default browser...
+! Because you are using a Docker driver on windows, the terminal needs to be open to run it.
+
+You should be able to access pgadmin page through your browser using the above url.
+
+
+

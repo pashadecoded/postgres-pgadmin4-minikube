@@ -1,0 +1,62 @@
+#### Fresh Deployment of Postgres in k8s requires a pv for its pvc incase of persistent storage 
+
+# Default PVC
+
+# Please edit the object below. Lines beginning with a '#' will be ignored,
+# and an empty file will abort the edit. If an error occurs while saving this file will be
+# reopened with the relevant failures.
+#
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: "2022-10-23T15:14:15Z"
+  finalizers:
+  - kubernetes.io/pvc-protection
+  labels:
+    app.kubernetes.io/component: primary
+    app.kubernetes.io/instance: postgres
+    app.kubernetes.io/name: postgresql
+  name: data-postgres-postgresql-0
+  namespace: postgres
+  resourceVersion: "450076"
+  uid: 84677564-a41a-4e8f-b045-081284e09d73
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 8Gi
+  volumeMode: Filesystem
+
+# Since storageClassName: is not assigned above its is considered to be default which is, storageClassName: "" sometimes it can be set to manual or slow or fast
+
+# PV Hostpath
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: postgres-pv 
+  labels:
+    type: local
+spec:
+  storageClassName: ""
+  capacity:
+    storage: 8Gi
+  accessModes:
+    - ReadWriteOnce 
+  volumeMode: Filesystem
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: "/home/ubuntu/pvs/" 
+    type: DirectoryOrCreate
+
+# Note 
+# storageClassName: "" can bound with the PVC that has storageClassName as "", incase if it's set to Manual then both PV and PVC should be manual.
+# storage: both PV and PVC should have the same storage number.
+# accessModes: both PV and PVC both accessModes should be same.
+# volumeMode: Filesystem - both pv and pvc should be same.
+
+# hostPath:
+#     path: "/mnt/data"
+# Directory shoukd have r/w access to the directory. if not even after the pvc has binded to the pv the contaienr will fail to start which you can check using the kubeclt logs command
+# the best approach is to provide a directory in /home/user/.
